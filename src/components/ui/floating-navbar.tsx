@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useAuthStore } from "@/store/Auth";
+import { useRouter } from "next/navigation";
 
 export const FloatingNav = ({
   navItems,
@@ -26,6 +27,7 @@ export const FloatingNav = ({
   const { session, logout } = useAuthStore();
 
   const [visible, setVisible] = useState(true);
+  const router = useRouter();
 
   useMotionValueEvent(scrollYProgress, "change", (current) => {
     // Check if current is not undefined and is a number
@@ -47,6 +49,10 @@ export const FloatingNav = ({
       }
     }
   });
+  const handleLogout = async () => {
+    await logout(); // Call the logout function from your store
+    router.push("/"); // Redirect to the home page after logout
+  };
 
   return (
     <AnimatePresence mode="wait">
@@ -81,7 +87,7 @@ export const FloatingNav = ({
         ))}
         {session ? (
           <button
-            onClick={logout}
+            onClick={handleLogout}
             className="relative rounded-full border border-neutral-200 px-4 py-2 text-sm font-medium text-black dark:border-white/[0.2] dark:text-white"
           >
             <span>Logout</span>
