@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/Auth";
-import { ID } from "appwrite";
+import { ID, AppwriteException } from "appwrite";
 import {
   db,
   questionAttachmentBucket,
@@ -114,10 +114,21 @@ const AskQuestionPage = () => {
 
       // 4. Redirect on success
       router.push("/questions");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      // Changed 'any' to 'unknown'
       console.error("Error asking question:", err);
-      // More specific error handling could go here, e.g., checking err.code
-      setError(err.message || "Failed to ask question. Please try again.");
+      let errorMessage = "Failed to ask question. Please try again.";
+
+      if (err instanceof AppwriteException) {
+        // Appwrite specific error message
+        errorMessage = err.message;
+        // Optionally, you can also check err.code for specific HTTP status codes
+        // e.g., if (err.code === 400) errorMessage = "Bad request data.";
+      } else if (err instanceof Error) {
+        // Generic JavaScript error
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

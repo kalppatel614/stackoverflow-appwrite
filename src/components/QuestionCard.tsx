@@ -10,7 +10,7 @@ import convertDateToRelativeTime from "@/utils/relativeTime";
 import { useRouter } from "next/navigation"; // Import useRouter
 import { useAuthStore } from "@/store/Auth"; // Import useAuthStore
 
-interface QuestionCardProps {
+type QuestionCardProps = {
   ques: Models.Document & {
     totalVotes: number;
     totalAnswers: number;
@@ -21,7 +21,7 @@ interface QuestionCardProps {
       reputation: number;
     };
   };
-}
+};
 
 const QuestionCard = ({ ques }: QuestionCardProps) => {
   const [height, setHeight] = React.useState(0);

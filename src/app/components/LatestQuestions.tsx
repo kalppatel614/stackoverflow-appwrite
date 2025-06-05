@@ -9,7 +9,18 @@ import { databases, users } from "@/models/server/config";
 import { UserPrefs } from "@/store/Auth";
 import { Query } from "node-appwrite";
 import React from "react";
+import type { Models } from "appwrite";
 
+type ExtendedQuestion = Models.Document & {
+  totalVotes: number;
+  totalAnswers: number;
+  tags: string[];
+  author: {
+    $id: string;
+    name: string;
+    reputation: number;
+  };
+};
 const LatestQuestions = async () => {
   const questions = await databases.listDocuments(db, questionCollection, [
     Query.limit(5),
@@ -17,7 +28,7 @@ const LatestQuestions = async () => {
   ]);
   console.log("Fetched Questions:", questions);
 
-  questions.documents = await Promise.all(
+  const extendedDocuments: ExtendedQuestion[] = await Promise.all(
     questions.documents.map(async (ques) => {
       const [author, answers, votes] = await Promise.all([
         users.get<UserPrefs>(ques.authorId),
@@ -36,6 +47,7 @@ const LatestQuestions = async () => {
         ...ques,
         totalAnswers: answers.total,
         totalVotes: votes.total,
+        tags: ques.tags ?? [],
         author: {
           $id: author.$id,
           reputation: author.prefs.reputation,
@@ -49,7 +61,7 @@ const LatestQuestions = async () => {
   console.log(questions);
   return (
     <div className="space-y-6">
-      {questions.documents.map((question) => (
+      {extendedDocuments.map((question) => (
         <QuestionCard key={question.$id} ques={question} />
       ))}
     </div>

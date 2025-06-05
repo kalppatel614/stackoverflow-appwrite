@@ -41,11 +41,17 @@ const Confetti = (options: ConfettiOptions) => {
   });
 };
 
-Confetti.shapeFromPath = (options: { path: string; [key: string]: any }) => {
+Confetti.shapeFromPath = (options: {
+  path: string;
+  [key: string]: unknown;
+}) => {
   return confetti.shapeFromPath({ ...options });
 };
 
-Confetti.shapeFromText = (options: { text: string; [key: string]: any }) => {
+Confetti.shapeFromText = (options: {
+  text: string;
+  [key: string]: unknown;
+}) => {
   return confetti.shapeFromText({ ...options });
 };
 

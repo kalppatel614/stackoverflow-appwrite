@@ -1,6 +1,3 @@
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { IconCloud } from "@/components/magicui/icon-cloud";
 import LatestQuestions from "./components/LatestQuestions";
 import TopContributers from "./components/TopContributers";

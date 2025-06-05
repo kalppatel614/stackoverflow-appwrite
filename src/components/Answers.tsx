@@ -1,11 +1,10 @@
 "use client";
 
-import { ID, Models } from "appwrite";
+import { Models } from "appwrite";
 import React from "react";
 import VoteButtons from "./VoteButtons";
 import { useAuthStore } from "@/store/Auth";
-import { avatars, databases } from "@/models/client/config";
-import { answerCollection, db } from "@/models/name";
+import { avatars } from "@/models/client/config";
 import RTE, { MarkdownPreview } from "./RTE";
 import Comments from "./Comments";
 import slugify from "@/utils/slugify";
@@ -55,8 +54,12 @@ const Answers = ({
           ...prev.documents,
         ],
       }));
-    } catch (error: any) {
-      window.alert(error?.message || "Error creating answer");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        window.alert(error.message || "Error creating answer");
+      } else {
+        window.alert("Error creating answer");
+      }
     }
   };
 
@@ -77,8 +80,12 @@ const Answers = ({
         total: prev.total - 1,
         documents: prev.documents.filter((answer) => answer.$id !== answerId),
       }));
-    } catch (error: any) {
-      window.alert(error?.message || "Error deleting answer");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        window.alert(error.message || "Error deleting answer");
+      } else {
+        window.alert("Error deleting answer");
+      }
     }
   };
 
@@ -111,7 +118,7 @@ const Answers = ({
             <div className="mt-4 flex items-center justify-end gap-1">
               <picture>
                 <img
-                  src={avatars.getInitials(answer.author.name, 36, 36).href}
+                  src={avatars.getInitials(answer.author.name, 36, 36)}
                   alt={answer.author.name}
                   className="rounded-lg"
                 />

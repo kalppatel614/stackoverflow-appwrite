@@ -6,6 +6,7 @@ import { useAuthStore } from "@/store/Auth";
 import { IconTrash } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { AppwriteException } from "appwrite";
 
 const DeleteQuestion = ({
   questionId,
@@ -22,8 +23,19 @@ const DeleteQuestion = ({
       await databases.deleteDocument(db, questionCollection, questionId);
 
       router.push("/questions");
-    } catch (error: any) {
-      window.alert(error?.message || "Something went wrong");
+    } catch (error: unknown) {
+      // Changed 'any' to 'unknown'
+      let errorMessage = "Something went wrong"; // Default message
+
+      if (error instanceof AppwriteException) {
+        // If it's an Appwrite error, use its message
+        errorMessage = error.message;
+      } else if (error instanceof Error) {
+        // For general JavaScript Errors
+        errorMessage = error.message;
+      }
+
+      window.alert(errorMessage);
     }
   };
 

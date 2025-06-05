@@ -1,9 +1,9 @@
 import { answerCollection, db } from "@/models/name";
 import { databases, users } from "@/models/server/config";
-import { Content } from "next/font/google";
 import { NextResponse, NextRequest } from "next/server";
-import { ID } from "node-appwrite";
+import { ID, AppwriteException } from "node-appwrite";
 import { UserPrefs } from "@/store/Auth";
+import { code } from "@uiw/react-md-editor";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,11 +25,19 @@ export async function POST(request: NextRequest) {
       reputation: Number(prefs.reputation) + 1,
     });
     return NextResponse.json(response, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error?.message || "Error Creating Answer" },
-      { status: error?.status || error?.code || 500 }
-    );
+  } catch (error: unknown) {
+    let errorMessage = "Error Creating Answer";
+    let statusCode = 500;
+
+    if (error instanceof AppwriteException) {
+      // If it's an AppwriteException, use its message and code
+      errorMessage = error.message;
+      statusCode = error.code; // AppwriteException 'code' often maps to HTTP status
+    } else if (error instanceof Error) {
+      // For generic JavaScript Errors
+      errorMessage = error.message;
+    }
+    return NextResponse.json({ error: errorMessage }, { status: statusCode });
   }
 }
 
@@ -50,10 +58,18 @@ export async function DELETE(request: NextRequest) {
       reputation: Number(prefs.reputation) - 1,
     });
     return NextResponse.json({ data: response }, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json(
-      { message: error?.message || "Error Deleting Answer" },
-      { status: error?.status || error?.code || 500 }
-    );
+  } catch (error: unknown) {
+    // Changed 'any' to 'unknown'
+    let errorMessage = "Error Deleting Answer";
+    let statusCode = 500;
+
+    if (error instanceof AppwriteException) {
+      errorMessage = error.message;
+      statusCode = error.code;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return NextResponse.json({ message: errorMessage }, { status: statusCode });
   }
 }

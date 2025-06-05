@@ -48,8 +48,12 @@ const Comments = ({
         total: prev.total + 1,
         documents: [{ ...response, author: user }, ...prev.documents],
       }));
-    } catch (error: any) {
-      window.alert(error?.message || "Error creating comment");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        window.alert(error.message);
+      } else {
+        window.alert("Error creating comment");
+      }
     }
   };
 
@@ -63,8 +67,12 @@ const Comments = ({
           (comment) => comment.$id !== commentId
         ),
       }));
-    } catch (error: any) {
-      window.alert(error?.message || "Error deleting comment");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        window.alert(error.message);
+      } else {
+        window.alert("Error deleting comment");
+      }
     }
   };
 

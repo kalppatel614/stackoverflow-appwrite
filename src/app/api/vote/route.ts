@@ -7,7 +7,7 @@ import {
 import { databases, users } from "@/models/server/config";
 import { UserPrefs } from "@/store/Auth";
 import { NextRequest, NextResponse } from "next/server";
-import { ID, Query } from "node-appwrite";
+import { ID, Query, AppwriteException } from "node-appwrite";
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,17 +47,12 @@ export async function POST(request: NextRequest) {
 
     //prev vote does not exist
     if (response.documents[0]?.voteStatus !== voteStatus) {
-      const doc = await databases.createDocument(
-        db,
-        voteCollection,
-        ID.unique(),
-        {
-          type,
-          typeId,
-          voteStatus,
-          votedById,
-        }
-      );
+      await databases.createDocument(db, voteCollection, ID.unique(), {
+        type,
+        typeId,
+        voteStatus,
+        votedById,
+      });
 
       // increase or decrease the reputation
       const QuestionAnswer = await databases.getDocument(
@@ -109,10 +104,18 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error?.message || "Error in voting" },
-      { status: error?.status || error?.code || 500 }
-    );
+  } catch (error: unknown) {
+    // Changed 'any' to 'unknown'
+    let errorMessage = "Error Deleting Answer";
+    let statusCode = 500;
+
+    if (error instanceof AppwriteException) {
+      errorMessage = error.message;
+      statusCode = error.code;
+    } else if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+
+    return NextResponse.json({ message: errorMessage }, { status: statusCode });
   }
 }

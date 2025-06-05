@@ -8,6 +8,7 @@ import {
   useEffect,
   useRef,
   useState,
+  MouseEvent,
 } from "react";
 
 interface MousePosition {
@@ -38,7 +39,7 @@ function useMousePosition(): MousePosition {
 
 interface MagicContainerProps {
   children?: ReactNode;
-  className?: any;
+  className?: string;
 }
 
 const MagicContainer = ({ children, className }: MagicContainerProps) => {
@@ -47,27 +48,6 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
   const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const containerSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const [boxes, setBoxes] = useState<Array<HTMLElement>>([]);
-
-  useEffect(() => {
-    init();
-    containerRef.current &&
-      setBoxes(
-        Array.from(containerRef.current.children).map((el) => el as HTMLElement)
-      );
-  }, []);
-
-  useEffect(() => {
-    init();
-    window.addEventListener("resize", init);
-
-    return () => {
-      window.removeEventListener("resize", init);
-    };
-  }, [setBoxes]);
-
-  useEffect(() => {
-    onMouseMove();
-  }, [mousePosition]);
 
   const init = () => {
     if (containerRef.current) {
@@ -102,6 +82,28 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
       });
     }
   };
+
+  useEffect(() => {
+    init();
+    if (containerRef.current) {
+      setBoxes(
+        Array.from(containerRef.current.children).map((el) => el as HTMLElement)
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    init();
+    window.addEventListener("resize", init);
+
+    return () => {
+      window.removeEventListener("resize", init);
+    };
+  }, [setBoxes]);
+
+  useEffect(() => {
+    onMouseMove();
+  }, [mousePosition, onMouseMove]);
 
   return (
     <div className={cn("h-full w-full", className)} ref={containerRef}>
@@ -141,15 +143,6 @@ interface MagicCardProps {
    * The size of the spotlight effect in pixels
    * */
   size?: number;
-
-  /**
-   * @default true
-   * @type boolean
-   * @description
-   * Whether to show the spotlight
-   * */
-  spotlight?: boolean;
-
   /**
    * @default "rgba(255,255,255,0.03)"
    * @type string
@@ -159,31 +152,21 @@ interface MagicCardProps {
   spotlightColor?: string;
 
   /**
-   * @default true
-   * @type boolean
-   * @description
-   * Whether to isolate the card which is being hovered
-   * */
-  isolated?: boolean;
-
-  /**
    * @default "rgba(255,255,255,0.03)"
    * @type string
    * @description
    * The background of the card
    * */
   background?: string;
-
-  [key: string]: any;
+  borderColor?: string;
+  [key: string]: unknown;
 }
 
 const MagicCard: React.FC<MagicCardProps> = ({
   className,
   children,
   size = 600,
-  spotlight = true,
   borderColor = "hsl(0 0% 98%)",
-  isolated = true,
   ...props
 }) => {
   return (
