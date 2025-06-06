@@ -32,7 +32,6 @@ export function GridPattern({
   numSquares = 50,
   className,
   maxOpacity = 0.5,
-  duration = 4,
   ...props
 }: GridPatternProps) {
   const id = useId();
@@ -98,7 +97,7 @@ export function GridPattern({
         resizeObserver.unobserve(container);
       }
     };
-  }, []);
+  });
 
   return (
     <svg

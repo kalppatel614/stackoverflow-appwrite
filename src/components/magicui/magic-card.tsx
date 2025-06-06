@@ -8,7 +8,6 @@ import {
   useEffect,
   useRef,
   useState,
-  MouseEvent,
 } from "react";
 
 interface MousePosition {

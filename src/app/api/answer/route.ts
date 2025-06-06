@@ -3,7 +3,6 @@ import { databases, users } from "@/models/server/config";
 import { NextResponse, NextRequest } from "next/server";
 import { ID, AppwriteException } from "node-appwrite";
 import { UserPrefs } from "@/store/Auth";
-import { code } from "@uiw/react-md-editor";
 
 export async function POST(request: NextRequest) {
   try {
