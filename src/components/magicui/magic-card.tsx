@@ -5,6 +5,7 @@ import {
   CSSProperties,
   ReactElement,
   ReactNode,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -55,7 +56,7 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
     }
   };
 
-  const onMouseMove = () => {
+  const onMouseMove = useCallback(() => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
       const { w, h } = containerSize.current;
@@ -80,7 +81,7 @@ const MagicContainer = ({ children, className }: MagicContainerProps) => {
         }
       });
     }
-  };
+  }, [mousePosition.x, mousePosition.y, boxes]);
 
   useEffect(() => {
     init();

@@ -5,7 +5,7 @@ import {
   voteCollection,
   questionCollection,
 } from "@/models/name";
-import { Query } from "node-appwrite";
+import { Query, Models } from "node-appwrite";
 import React from "react";
 import Link from "next/link";
 import ShimmerButton from "@/components/magicui/shimmer-button";
@@ -17,22 +17,24 @@ import Search from "./Search";
 const Page = async ({
   searchParams,
 }: {
-  searchParams: { page?: string; tag?: string; search?: string };
+  searchParams: Promise<{ page?: string; tag?: string; search?: string }>;
 }) => {
-  searchParams.page ||= "1";
+  const resolvedSearchParams = await searchParams;
+  resolvedSearchParams.page ||= "1";
 
   const queries = [
     Query.orderDesc("$createdAt"),
-    Query.offset((+searchParams.page - 1) * 25),
+    Query.offset((+resolvedSearchParams.page - 1) * 25),
     Query.limit(25),
   ];
 
-  if (searchParams.tag) queries.push(Query.equal("tags", searchParams.tag));
-  if (searchParams.search)
+  if (resolvedSearchParams.tag)
+    queries.push(Query.equal("tags", resolvedSearchParams.tag));
+  if (resolvedSearchParams.search)
     queries.push(
       Query.or([
-        Query.search("title", searchParams.search),
-        Query.search("content", searchParams.search),
+        Query.search("title", resolvedSearchParams.search),
+        Query.search("content", resolvedSearchParams.search),
       ])
     );
 
@@ -43,7 +45,7 @@ const Page = async ({
   );
   console.log("Questions", questions);
 
-  questions.documents = await Promise.all(
+  questions.documents = (await Promise.all(
     questions.documents.map(async (ques) => {
       const [author, answers, votes] = await Promise.all([
         users.get<UserPrefs>(ques.authorId),
@@ -62,6 +64,7 @@ const Page = async ({
         ...ques,
         totalAnswers: answers.total,
         totalVotes: votes.total,
+        tags: ques.tags || [],
         author: {
           $id: author.$id,
           reputation: author.prefs.reputation,
@@ -69,7 +72,16 @@ const Page = async ({
         },
       };
     })
-  );
+  )) as (Models.Document & {
+    totalVotes: number;
+    totalAnswers: number;
+    tags: string[];
+    author: {
+      $id: string;
+      name: string;
+      reputation: number;
+    };
+  })[];
 
   return (
     <div className="container mx-auto px-4 pb-20 pt-36">
@@ -91,7 +103,21 @@ const Page = async ({
       </div>
       <div className="mb-4 max-w-3xl space-y-6">
         {questions.documents.map((ques) => (
-          <QuestionCard key={ques.$id} ques={ques} />
+          <QuestionCard
+            key={ques.$id}
+            ques={
+              ques as Models.Document & {
+                totalVotes: number;
+                totalAnswers: number;
+                tags: string[];
+                author: {
+                  $id: string;
+                  name: string;
+                  reputation: number;
+                };
+              }
+            }
+          />
         ))}
       </div>
       <Pagination total={questions.total} limit={25} />

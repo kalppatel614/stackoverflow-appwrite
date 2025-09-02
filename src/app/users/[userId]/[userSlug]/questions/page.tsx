@@ -8,22 +8,24 @@ import {
 } from "@/models/name";
 import { databases, users } from "@/models/server/config";
 import { UserPrefs } from "@/store/Auth";
-import { Query } from "node-appwrite";
+import { Query, Models } from "node-appwrite";
 import React from "react";
 
 const Page = async ({
   params,
   searchParams,
 }: {
-  params: { userId: string; userSlug: string };
-  searchParams: { page?: string };
+  params: Promise<{ userId: string; userSlug: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) => {
-  searchParams.page ||= "1";
+  const { userId } = await params;
+  const resolvedSearchParams = await searchParams;
+  resolvedSearchParams.page ||= "1";
 
   const queries = [
-    Query.equal("authorId", params.userId),
+    Query.equal("authorId", userId),
     Query.orderDesc("$createdAt"),
-    Query.offset((+searchParams.page - 1) * 25),
+    Query.offset((+resolvedSearchParams.page - 1) * 25),
     Query.limit(25),
   ];
 
@@ -68,7 +70,21 @@ const Page = async ({
       </div>
       <div className="mb-4 max-w-3xl space-y-6">
         {questions.documents.map((ques) => (
-          <QuestionCard key={ques.$id} ques={ques} />
+          <QuestionCard
+            key={ques.$id}
+            ques={
+              ques as Models.Document & {
+                totalVotes: number;
+                totalAnswers: number;
+                tags: string[];
+                author: {
+                  $id: string;
+                  name: string;
+                  reputation: number;
+                };
+              }
+            }
+          />
         ))}
       </div>
       <Pagination total={questions.total} limit={25} />
